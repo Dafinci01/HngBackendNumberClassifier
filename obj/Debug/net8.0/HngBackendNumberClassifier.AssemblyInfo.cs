@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HngBackendNumberClassifier")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8968a28373c46e9edca30c38cc6972cad219a86c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c1cea58496a0672f729120c30cf5d2ed192e5f5")]
 [assembly: System.Reflection.AssemblyProductAttribute("HngBackendNumberClassifier")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HngBackendNumberClassifier")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

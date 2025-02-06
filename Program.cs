@@ -4,9 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+//
 builder.Services.AddControllersWithViews(); // For MVC
-// or
-// builder.Services.AddEndpointsApiExplorer(); // For API-specific services
+builder.Services.AddHttpClient();
+builder.Services.AddEndpointsApiExplorer(); // For API-specific services
 
 var app = builder.Build();
 
