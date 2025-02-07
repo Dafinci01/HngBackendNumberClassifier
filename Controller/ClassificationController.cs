@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace ClassifyNumber.Controllers
 {
-    [Route("api/classify-number")] // Updated route to include 'api/'
+    [Route("api/classify-number")] // Route to access this controller
     [ApiController]
     public class ClassificationController : ControllerBase
     {
@@ -19,7 +19,6 @@ namespace ClassifyNumber.Controllers
             _httpClient = httpClient;
         }
 
-        // FunFactResponse defined within the controller
         public class FunFactResponse
         {
             public string? text { get; set; } = string.Empty;
@@ -28,14 +27,32 @@ namespace ClassifyNumber.Controllers
             public string? type { get; set; } = string.Empty;
         }
 
-        // GET: api/classify-number?number=5
+        public class NumberClassificationRequest
+        {
+            public string NumberString { get; set; } = string.Empty;
+        }
+
+        // GET: api/classify-number?numberString=5
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] string numberString)
         {
+            return await ClassifyNumber(numberString);
+        }
+
+        // POST: api/classify-number
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] NumberClassificationRequest request)
+        {
+            return await ClassifyNumber(request.NumberString);
+        }
+
+        private async Task<IActionResult> ClassifyNumber(string numberString)
+        {
             // Validate the input as a valid integer
-            if (!int.TryParse(numberString, out int number))
+            if (string.IsNullOrWhiteSpace(numberString) ||
+                !int.TryParse(numberString, out int number))
             {
-                return BadRequest(new { error = true, message = "Invalid number" });
+                return BadRequest(new { error = true, message = "Invalid or missing number" });
             }
 
             if (number < 0)

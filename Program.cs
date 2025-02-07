@@ -1,43 +1,38 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers(); // For API
-builder.Services.AddHttpClient();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAllOrigins",
-        builder => builder.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
-});
+builder.Services.AddControllers(); // Enable controllers
 
+// Register HttpClient service in dependency injection
+builder.Services.AddHttpClient(); // This enables the HttpClient to be injected into your controllers
+
+// Build the app
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+    app.UseDeveloperExceptionPage(); // Show detailed error messages in development
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    app.UseExceptionHandler("/Home/Error"); // Redirect to error page in production
+    app.UseHsts(); // Apply HTTP Strict Transport Security
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
+app.UseStaticFiles(); // Serve static files
 
-app.UseRouting();
+app.UseRouting(); // Enable routing
 
-// Use CORS policy
-app.UseCors("AllowAllOrigins");
+app.UseAuthorization(); // Enable authorization
 
-app.UseAuthorization();
+app.MapControllers(); // Map attribute-routed controllers
 
-app.MapControllers();
-
+// Run the application
 app.Run();
