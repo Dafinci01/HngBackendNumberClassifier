@@ -1,0 +1,6 @@
+/root/classify-number/obj/Debug/net6.0/ClassifyNumber.GeneratedMSBuildEditorConfig.editorconfig
+/root/classify-number/obj/Debug/net6.0/ClassifyNumber.AssemblyInfoInputs.cache
+/root/classify-number/obj/Debug/net6.0/ClassifyNumber.AssemblyInfo.cs
+/root/classify-number/obj/Debug/net6.0/ClassifyNumber.csproj.CoreCompileInputs.cache
+/root/classify-number/obj/Debug/net6.0/ClassifyNumber.MvcApplicationPartsAssemblyInfo.cache
+/root/classify-number/obj/Debug/net6.0/ClassifyNumber.sourcelink.json

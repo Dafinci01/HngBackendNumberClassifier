@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace HngBackendNumberClassifier.Controllers
+namespace ClassifyNumber.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/classify-number")] // Updated route to include 'api/'
     [ApiController]
-    public class NumberClassificationController : ControllerBase
+    public class ClassificationController : ControllerBase
     {
         private readonly HttpClient _httpClient;
 
-        public NumberClassificationController(HttpClient httpClient)
+        public ClassificationController(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
@@ -28,14 +28,19 @@ namespace HngBackendNumberClassifier.Controllers
             public string? type { get; set; } = string.Empty;
         }
 
-        // GET: api/NumberClassification?number=5
+        // GET: api/classify-number?number=5
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] int number)
+        public async Task<IActionResult> Get([FromQuery] string numberString)
         {
-            // Validate the number
-            if (number < 0)
+            // Validate the input as a valid integer
+            if (!int.TryParse(numberString, out int number))
             {
                 return BadRequest(new { error = true, message = "Invalid number" });
+            }
+
+            if (number < 0)
+            {
+                return BadRequest(new { error = true, message = "Number must be non-negative" });
             }
 
             var properties = new List<string>();
@@ -68,18 +73,13 @@ namespace HngBackendNumberClassifier.Controllers
             {
                 number,
                 is_prime = IsPrime(number),
-                is_perfect = false, // Placeholder, implement if required
+                is_perfect = IsPerfect(number),
                 properties,
                 digit_sum = digitSum,
-                fun_fact = funFact
+                fun_fact = funFact.text
             };
 
             return Ok(response);
-        }
-        private int GetRandomNumber()
-        {
-            Random random = new Random();
-            return random.Next(1, 101);
         }
 
         private bool IsArmstrong(int n)
@@ -101,6 +101,19 @@ namespace HngBackendNumberClassifier.Controllers
             return true;
         }
 
+        private bool IsPerfect(int n)
+        {
+            int sum = 0;
+            for (int i = 1; i <= n / 2; i++)
+            {
+                if (n % i == 0)
+                {
+                    sum += i;
+                }
+            }
+            return sum == n && n != 0;
+        }
+
         private int GetDigitSum(int n)
         {
             return n.ToString().Select(d => int.Parse(d.ToString())).Sum();
@@ -108,7 +121,7 @@ namespace HngBackendNumberClassifier.Controllers
 
         private async Task<FunFactResponse> GetFunFact(int number, bool isArmstrong)
         {
-            // Choose the appropriate type for fun fact based on whether it's Armstrong or not
+            // Choose the appropriate type for fun fact
             string type = isArmstrong ? "math" : "trivia";
             var response = await _httpClient.GetStringAsync($"http://numbersapi.com/{number}/{type}?json");
 

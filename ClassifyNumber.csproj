@@ -1,6 +1,13 @@
-@HngBackendNumberClassifier_HostAddress = http://localhost:5023
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
-GET {{HngBackendNumberClassifier_HostAddress}}/weatherforecast/
-Accept: application/json
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>  <!-- Ensure you are targeting .NET 8.0 -->
+    <Nullable>enable</Nullable>                 <!-- Nullable reference types -->
+  </PropertyGroup>
 
-###
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />  <!-- Keep this if you're using it -->
+    <!-- You can add other necessary packages here -->
+  </ItemGroup>
+
+</Project>

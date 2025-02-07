@@ -1,13 +1,19 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//
-builder.Services.AddControllersWithViews(); // For MVC
+builder.Services.AddControllers(); // For API
 builder.Services.AddHttpClient();
-builder.Services.AddEndpointsApiExplorer(); // For API-specific services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -27,10 +33,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Use CORS policy
+app.UseCors("AllowAllOrigins");
+
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers();
 
 app.Run();

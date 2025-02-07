@@ -1,8 +1,8 @@
 {
   "Version": 1,
-  "Hash": "tQnuSkR3sNPeNVKTpZ/YmQ5T0iBY+Y4q+5MvHaE5QIA=",
-  "Source": "HngBackendNumberClassifier",
-  "BasePath": "_content/HngBackendNumberClassifier",
+  "Hash": "YIoVRMPlb4DG0NeS70gMO7KZgd90897v7g3yIKKXVKU=",
+  "Source": "ClassifyNumber",
+  "BasePath": "_content/ClassifyNumber",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],

@@ -7,21 +7,29 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Correct the path for the COPY command
-COPY ["HngBackendNumberClassifier.csproj", "./"]
-RUN dotnet restore "HngBackendNumberClassifier.csproj"
+# Copy just the project files and restore dependencies
+COPY ClassifyNumber.csproj .
+COPY Properties/ Properties/
+COPY Controller/ Controller/
+COPY appsettings.Development.json .
+COPY appsettings.json .
+COPY Program.cs .
 
-# Copy the entire project and build it
+# Restore packages
+RUN dotnet restore "ClassifyNumber.csproj"
+
+# Copy all remaining files, if necessary
 COPY . .
-WORKDIR "/src"
-RUN dotnet build "HngBackendNumberClassifier.csproj" -c Release -o /app/build
+
+# Build the application
+RUN dotnet build "ClassifyNumber.csproj" -c Release -o /app/build
 
 # Publish the application
 FROM build AS publish
-RUN dotnet publish "HngBackendNumberClassifier.csproj" -c Release -o /app/publish
+RUN dotnet publish "ClassifyNumber.csproj" -c Release -o /app/publish
 
 # Final stage to run the application
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "HngBackendNumberClassifier.dll"]
+ENTRYPOINT ["dotnet", "ClassifyNumber.dll"]
