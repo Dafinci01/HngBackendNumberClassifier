@@ -23,38 +23,31 @@ namespace ClassifyNumber.Controllers
             public string? text { get; set; }
         }
 
-        // GET: api/classify-number?number=371
-        [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] string number)
+        // GET: api/classify-number/{number?}
+        [HttpGet("{number?}")]
+        public async Task<IActionResult> Get(int? number)
         {
-            // Validate input: if null/empty or not an integer, return error response.
-            if (string.IsNullOrWhiteSpace(number) || !int.TryParse(number, out int num))
-            {
-                return BadRequest(new { number, error = true });
-            }
+            int validatedNumber = number ?? new Random().Next(1, 1000);
 
-            // Compute mathematical properties.
-            bool isPrime = IsPrime(num);
-            bool isPerfect = IsPerfect(num);
-            int digitSum = GetDigitSum(num);
+            // Compute mathematical properties
+            bool isPrime = IsPrime(validatedNumber);
+            bool isPerfect = IsPerfect(validatedNumber);
+            int digitSum = GetDigitSum(validatedNumber);
+            bool isArmstrong = IsArmstrong(validatedNumber);
 
             // Determine properties field based on Armstrong and parity.
             var properties = new List<string>();
-            bool isArmstrong = IsArmstrong(num);
-            if (isArmstrong)
-            {
-                properties.Add("armstrong");
-            }
-            properties.Add(num % 2 == 0 ? "even" : "odd");
+            if (isArmstrong) properties.Add("armstrong");
+            properties.Add(validatedNumber % 2 == 0 ? "even" : "odd");
 
-            // Fetch fun fact from Numbers API (using math type)
-            var funFactResponse = await GetFunFact(num);
+            // Fetch fun fact from Numbers API
+            var funFactResponse = await GetFunFact(validatedNumber);
             string funFact = funFactResponse?.text ?? "No fact available";
 
-            // Return the JSON response in the required format.
+            // Return the JSON response
             return Ok(new
             {
-                number = num,
+                number = validatedNumber,
                 is_prime = isPrime,
                 is_perfect = isPerfect,
                 properties,
@@ -65,11 +58,9 @@ namespace ClassifyNumber.Controllers
 
         private bool IsArmstrong(int num)
         {
-            // Use the absolute value for checking Armstrong status.
             int absNum = Math.Abs(num);
-            int sum = 0;
-            int nDigits = absNum.ToString().Length;
-            int temp = absNum;
+            int sum = 0, nDigits = absNum.ToString().Length, temp = absNum;
+
             while (temp > 0)
             {
                 int digit = temp % 10;
@@ -81,47 +72,36 @@ namespace ClassifyNumber.Controllers
 
         private bool IsPrime(int num)
         {
-            // Only numbers greater than 1 can be prime.
-            if (num <= 1)
-                return false;
-            int absNum = Math.Abs(num);
-            for (int i = 2; i <= Math.Sqrt(absNum); i++)
+            if (num <= 1) return false;
+            for (int i = 2; i <= Math.Sqrt(num); i++)
             {
-                if (absNum % i == 0)
-                    return false;
+                if (num % i == 0) return false;
             }
             return true;
         }
 
         private bool IsPerfect(int num)
         {
-            // Perfect numbers are positive and equal the sum of their proper divisors.
-            if (num <= 0)
-                return false;
+            if (num <= 0) return false;
             int sum = 1;
             for (int i = 2; i <= Math.Sqrt(num); i++)
             {
                 if (num % i == 0)
                 {
                     sum += i;
-                    if (i != num / i)
-                    {
-                        sum += num / i;
-                    }
+                    if (i != num / i) sum += num / i;
                 }
             }
-            // Exclude 1 from being perfect.
             return sum == num && num != 1;
         }
 
         private int GetDigitSum(int num)
         {
-            int absNum = Math.Abs(num);
             int sum = 0;
-            while (absNum > 0)
+            while (num > 0)
             {
-                sum += absNum % 10;
-                absNum /= 10;
+                sum += num % 10;
+                num /= 10;
             }
             return sum;
         }
