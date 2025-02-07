@@ -1,14 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace ClassifyNumber.Controllers
 {
-    [Route("api/classify-number")] // Route to access this controller
+    [Route("api/classify-number")]
     [ApiController]
     public class ClassificationController : ControllerBase
     {
@@ -21,129 +20,124 @@ namespace ClassifyNumber.Controllers
 
         public class FunFactResponse
         {
-            public string? text { get; set; } = string.Empty;
-            public int number { get; set; }
-            public bool found { get; set; }
-            public string? type { get; set; } = string.Empty;
+            public string? text { get; set; }
         }
 
-        public class NumberClassificationRequest
-        {
-            public string NumberString { get; set; } = string.Empty;
-        }
-
-        // GET: api/classify-number?numberString=5
+        // GET: api/classify-number?number=371
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] string numberString)
+        public async Task<IActionResult> Get([FromQuery] string number)
         {
-            return await ClassifyNumber(numberString);
-        }
-
-        // POST: api/classify-number
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] NumberClassificationRequest request)
-        {
-            return await ClassifyNumber(request.NumberString);
-        }
-
-        private async Task<IActionResult> ClassifyNumber(string numberString)
-        {
-            // Validate the input as a valid integer
-            if (string.IsNullOrWhiteSpace(numberString) ||
-                !int.TryParse(numberString, out int number))
+            // Validate input: if null/empty or not an integer, return error response.
+            if (string.IsNullOrWhiteSpace(number) || !int.TryParse(number, out int num))
             {
-                return BadRequest(new { error = true, message = "Invalid or missing number" });
+                return BadRequest(new { number, error = true });
             }
 
-            if (number < 0)
-            {
-                return BadRequest(new { error = true, message = "Number must be non-negative" });
-            }
+            // Compute mathematical properties.
+            bool isPrime = IsPrime(num);
+            bool isPerfect = IsPerfect(num);
+            int digitSum = GetDigitSum(num);
 
+            // Determine properties field based on Armstrong and parity.
             var properties = new List<string>();
-
-            // Check if the number is an Armstrong number
-            bool isArmstrong = IsArmstrong(number);
+            bool isArmstrong = IsArmstrong(num);
             if (isArmstrong)
             {
                 properties.Add("armstrong");
             }
+            properties.Add(num % 2 == 0 ? "even" : "odd");
 
-            // Determine if the number is odd or even
-            if (number % 2 == 0)
+            // Fetch fun fact from Numbers API (using math type)
+            var funFactResponse = await GetFunFact(num);
+            string funFact = funFactResponse?.text ?? "No fact available";
+
+            // Return the JSON response in the required format.
+            return Ok(new
             {
-                properties.Add("even");
-            }
-            else
-            {
-                properties.Add("odd");
-            }
-
-            // Get the sum of digits
-            int digitSum = GetDigitSum(number);
-
-            // Fetch fun fact from Numbers API
-            var funFact = await GetFunFact(number, isArmstrong);
-
-            // Create response object
-            var response = new
-            {
-                number,
-                is_prime = IsPrime(number),
-                is_perfect = IsPerfect(number),
+                number = num,
+                is_prime = isPrime,
+                is_perfect = isPerfect,
                 properties,
                 digit_sum = digitSum,
-                fun_fact = funFact.text
-            };
-
-            return Ok(response);
+                fun_fact = funFact
+            });
         }
 
-        private bool IsArmstrong(int n)
+        private bool IsArmstrong(int num)
         {
-            int numDigits = n.ToString().Length;
-            int sum = n.ToString()
-                .Select(d => (int)Math.Pow(int.Parse(d.ToString()), numDigits))
-                .Sum();
-            return sum == n;
-        }
-
-        private bool IsPrime(int n)
-        {
-            if (n < 2) return false;
-            for (int i = 2; i <= Math.Sqrt(n); i++)
+            // Use the absolute value for checking Armstrong status.
+            int absNum = Math.Abs(num);
+            int sum = 0;
+            int nDigits = absNum.ToString().Length;
+            int temp = absNum;
+            while (temp > 0)
             {
-                if (n % i == 0) return false;
+                int digit = temp % 10;
+                sum += (int)Math.Pow(digit, nDigits);
+                temp /= 10;
+            }
+            return sum == absNum;
+        }
+
+        private bool IsPrime(int num)
+        {
+            // Only numbers greater than 1 can be prime.
+            if (num <= 1)
+                return false;
+            int absNum = Math.Abs(num);
+            for (int i = 2; i <= Math.Sqrt(absNum); i++)
+            {
+                if (absNum % i == 0)
+                    return false;
             }
             return true;
         }
 
-        private bool IsPerfect(int n)
+        private bool IsPerfect(int num)
         {
-            int sum = 0;
-            for (int i = 1; i <= n / 2; i++)
+            // Perfect numbers are positive and equal the sum of their proper divisors.
+            if (num <= 0)
+                return false;
+            int sum = 1;
+            for (int i = 2; i <= Math.Sqrt(num); i++)
             {
-                if (n % i == 0)
+                if (num % i == 0)
                 {
                     sum += i;
+                    if (i != num / i)
+                    {
+                        sum += num / i;
+                    }
                 }
             }
-            return sum == n && n != 0;
+            // Exclude 1 from being perfect.
+            return sum == num && num != 1;
         }
 
-        private int GetDigitSum(int n)
+        private int GetDigitSum(int num)
         {
-            return n.ToString().Select(d => int.Parse(d.ToString())).Sum();
+            int absNum = Math.Abs(num);
+            int sum = 0;
+            while (absNum > 0)
+            {
+                sum += absNum % 10;
+                absNum /= 10;
+            }
+            return sum;
         }
 
-        private async Task<FunFactResponse> GetFunFact(int number, bool isArmstrong)
+        private async Task<FunFactResponse?> GetFunFact(int num)
         {
-            // Choose the appropriate type for fun fact
-            string type = isArmstrong ? "math" : "trivia";
-            var response = await _httpClient.GetStringAsync($"http://numbersapi.com/{number}/{type}?json");
-
-            // Deserialize and return the fun fact response
-            return JsonConvert.DeserializeObject<FunFactResponse>(response) ?? new FunFactResponse();
+            try
+            {
+                var response = await _httpClient.GetStringAsync($"http://numbersapi.com/{num}/math?json");
+                return JsonConvert.DeserializeObject<FunFactResponse>(response);
+            }
+            catch
+            {
+                return new FunFactResponse { text = "No fact available" };
+            }
         }
     }
 }
+
