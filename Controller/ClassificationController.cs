@@ -23,11 +23,18 @@ namespace ClassifyNumber.Controllers
             public string? text { get; set; }
         }
 
-        // GET: api/classify-number/{number?}
-        [HttpGet("{number?}")]
-        public async Task<IActionResult> Get(int? number)
+        // ✅ Corrected Endpoint: GET /api/classify-number?number=371
+        [HttpGet]
+        public async Task<IActionResult> Get([FromQuery] string? number)
         {
-            int validatedNumber = number ?? new Random().Next(1, 1000);
+            // ✅ Handle invalid inputs (e.g., non-numeric values)
+            if (!int.TryParse(number, out int validatedNumber))
+            {
+                return BadRequest(new { number, error = true });
+            }
+
+            // ✅ Generate a random number if none is provided
+            validatedNumber = validatedNumber == 0 ? new Random().Next(1, 1000) : validatedNumber;
 
             // Compute mathematical properties
             bool isPrime = IsPrime(validatedNumber);
@@ -35,16 +42,16 @@ namespace ClassifyNumber.Controllers
             int digitSum = GetDigitSum(validatedNumber);
             bool isArmstrong = IsArmstrong(validatedNumber);
 
-            // Determine properties field based on Armstrong and parity.
+            // Determine properties field based on Armstrong and parity
             var properties = new List<string>();
             if (isArmstrong) properties.Add("armstrong");
             properties.Add(validatedNumber % 2 == 0 ? "even" : "odd");
 
-            // Fetch fun fact from Numbers API
+            // ✅ Fetch fun fact from Numbers API (math category)
             var funFactResponse = await GetFunFact(validatedNumber);
             string funFact = funFactResponse?.text ?? "No fact available";
 
-            // Return the JSON response
+            // ✅ Return the correct JSON format
             return Ok(new
             {
                 number = validatedNumber,
